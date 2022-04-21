@@ -83,7 +83,7 @@ def get_redis_cluster_from_settings(settings):
     """
     params = defaults.REDIS_PARAMS.copy()
     params.update(settings.getdict("REDIS_PARAMS"))
-    params.setdefault("cluster_nodes", settings.get("REDIS_CLUSTER_NODES"))
+    params.setdefault("cluster_nodes", settings.get("REDIS_STARTUP_NODES"))
     # XXX: Deprecate REDIS_* settings.
     return get_redis_cluster(**params)
 
