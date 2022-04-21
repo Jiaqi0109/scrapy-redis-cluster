@@ -1,7 +1,7 @@
 # scrapy-redis-cluster
 scrapy-redis 集群版
 
-本项目基于原项目 [scrapy-redis](https://github.com/rmax/scrapy-redis)
+本项目基于原项目 [scrapy-redis](https://github.com/rmax/scrapy-redis)  
 参考 [scrapy-redis-sentinel](https://github.com/crawlaio/scrapy-redis-sentinel)
 
 修改：
@@ -9,7 +9,7 @@ scrapy-redis 集群版
 
 ## 配置示例
 
-> 原版本 scrapy-redis 的所有配置都支持, 优先级：哨兵模式 > 集群模式 > 单机模式
+> 原版本 scrapy-redis 的所有配置都支持
 
 ```python
 # ----------------------------------------Bloomfilter 配置-------------------------------------
@@ -49,8 +49,6 @@ SCHEDULER_PERSIST = True
 SCHEDULER = "scrapy_redis_cluster.scheduler.Scheduler"
 # 基础去重
 DUPEFILTER_CLASS = "scrapy_redis_cluster.dupefilter.RedisDupeFilter"
-# BloomFilter
-# DUPEFILTER_CLASS = "scrapy_redis_cluster.dupefilter.RedisBloomFilter" # TODO
 
 # 启用基于 Redis 统计信息
 STATS_CLASS = "scrapy_redis_cluster.stats.RedisStatsCollector"
