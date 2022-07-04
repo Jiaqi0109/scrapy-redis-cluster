@@ -164,7 +164,7 @@ class RedisBloomFilter(BaseDupeFilter):
 
     logger = logger
 
-    def __init__(self, server, key, debug, bit, hash_number, bloom_number):
+    def __init__(self, server, key, debug, capacity, error_rate):
         """Initialize the duplicates filter.
         Parameters
         ----------
@@ -178,13 +178,7 @@ class RedisBloomFilter(BaseDupeFilter):
         self.server = server
         self.debug = debug
         self.logdupes = True
-        self.bit = bit
-        self.hash_number = hash_number
-        self.bloom_number = bloom_number
-        if bloom_number == 1:
-            self.bfs = [BloomFilter(server, key, hash_number), ]
-        else:
-            self.bfs = [BloomFilter(server, f'{key}-{bn}', bit, hash_number) for bn in bloom_number]
+        self.bf = BloomFilter(server, key, capacity, error_rate)
 
     @classmethod
     def from_settings(cls, settings):
@@ -207,10 +201,9 @@ class RedisBloomFilter(BaseDupeFilter):
         # TODO: Use SCRAPY_JOB env as default and fallback to timestamp.
         key = defaults.DUPEFILTER_KEY % {"timestamp": int(time.time())}
         debug = settings.getbool("DUPEFILTER_DEBUG", False)
-        bit = settings.getint("BLOOMFILTER_BIT", 30)
-        hash_number = settings.getint("BLOOMFILTER_HASH_NUMBER", 6)
-        bloom_number = settings.getint("BLOOMFILTER_NUMBER", 1)
-        return cls(server=server, key=key, debug=debug, bit=bit, hash_number=hash_number, bloom_number=bloom_number)
+        capacity = settings.getint('BLOOMFILTER_CAPACITY', 100000000)
+        error_rate = settings.getfloat('BLOOMFILTER_ERRORRATE', 1 / 100000)
+        return cls(server=server, key=key, debug=debug, capacity=capacity, error_rate=error_rate)
 
     @classmethod
     def from_crawler(cls, crawler):
@@ -232,10 +225,9 @@ class RedisBloomFilter(BaseDupeFilter):
         dupefilter_key = settings.get("SCHEDULER_DUPEFILTER_KEY", defaults.SCHEDULER_DUPEFILTER_KEY)
         key = dupefilter_key % {'spider': spider.name}
         debug = settings.getbool('DUPEFILTER_DEBUG', False)
-        bit = settings.getint('BLOOMFILTER_BIT', 30)
-        hash_number = settings.getint('BLOOMFILTER_HASH_NUMBER', 6)
-        bloom_number = settings.getint("BLOOMFILTER_NUMBER", 1)
-        return cls(server=server, key=key, debug=debug, bit=bit, hash_number=hash_number, bloom_number=bloom_number)
+        capacity = settings.getint('BLOOMFILTER_CAPACITY', 100000000)
+        error_rate = settings.getfloat('BLOOMFILTER_ERRORRATE', 1 / 100000)
+        return cls(server=server, key=key, debug=debug, capacity=capacity, error_rate=error_rate)
 
     def request_seen(self, request):
         """Returns True if request was already seen.
@@ -247,10 +239,9 @@ class RedisBloomFilter(BaseDupeFilter):
         bool
         """
         fp = self.request_fingerprint(request)
-        bf = hash(fp) % self.bloom_number
-        if bf.exists(fp):
+        if self.bf.exists(fp):
             return True
-        bf.insert(fp)
+        self.bf.insert(fp)
         return False
 
     def request_fingerprint(self, request):
@@ -274,8 +265,7 @@ class RedisBloomFilter(BaseDupeFilter):
 
     def clear(self):
         """Clears fingerprints data."""
-        for bf in self.bfs:
-            self.server.delete(bf.key)
+        pass
 
     def log(self, request, spider):
         """Logs given request.

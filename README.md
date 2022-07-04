@@ -6,7 +6,7 @@ scrapy-redis 集群版
 
 更新：
 1. 更新 `redis>=4.2.2` 依赖库，添加 redis cluster支持，不支持redis sentinel
-2. 添加bloomfilter，支持多个布隆过滤器
+2. 添加支持bloomfilter
 
 ## 配置示例
 
@@ -14,14 +14,10 @@ scrapy-redis 集群版
 
 ```python
 # ----------------------------------------Bloomfilter 配置-------------------------------------
-# 使用布隆过滤器的数量，默认为 1
-BLOOMFILTER_NUMBER = 1
-# 使用的哈希函数数，默认为 6
-BLOOMFILTER_HASH_NUMBER = 6
-
-# Bloomfilter 使用的 Redis 内存位，30 表示 2 ^ 30 = 128MB，默认为 30   (2 ^ 22 = 1MB 可去重 130W URL)
-# 最大为 32，redis 单 key 最大支持 512MB
-BLOOMFILTER_BIT = 30
+# 布隆过滤器期望过滤的数量，默认为 100000000
+BLOOMFILTER_CAPACITY = 100000000
+# 期望错误率 默认为 1 / 100000
+BLOOMFILTER_ERRORRATE = 1e-5
 
 # 是否开启去重调试模式 默认为 False 关闭
 DUPEFILTER_DEBUG = False
