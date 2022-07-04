@@ -4,8 +4,9 @@ scrapy-redis 集群版
 本项目基于原项目 [scrapy-redis](https://github.com/rmax/scrapy-redis)  
 参考 [scrapy-redis-sentinel](https://github.com/crawlaio/scrapy-redis-sentinel)
 
-修改：
-1. 更新 `redis>=4.2.2` 依赖库，添加 redis 集群支持
+更新：
+1. 更新 `redis>=4.2.2` 依赖库，添加 redis cluster支持，不支持redis sentinel
+2. 添加bloomfilter，支持多个布隆过滤器
 
 ## 配置示例
 
@@ -13,20 +14,17 @@ scrapy-redis 集群版
 
 ```python
 # ----------------------------------------Bloomfilter 配置-------------------------------------
+# 使用布隆过滤器的数量，默认为 1
+BLOOMFILTER_NUMBER = 1
 # 使用的哈希函数数，默认为 6
 BLOOMFILTER_HASH_NUMBER = 6
 
 # Bloomfilter 使用的 Redis 内存位，30 表示 2 ^ 30 = 128MB，默认为 30   (2 ^ 22 = 1MB 可去重 130W URL)
+# 最大为 32，redis 单 key 最大支持 512MB
 BLOOMFILTER_BIT = 30
 
 # 是否开启去重调试模式 默认为 False 关闭
 DUPEFILTER_DEBUG = False
-
-# REDIS 配置参数
-REDIS_PARAMS = {
-    "password": "password",
-    "db": 0
-}
 
 # ----------------------------------------Redis 单机模式-------------------------------------
 # Redis 单机地址
@@ -40,6 +38,12 @@ REDIS_STARTUP_NODES = [
     {"host": "172.25.2.26", "port": "6379"},
     {"host": "172.25.2.27", "port": "6379"},
 ]
+
+# REDIS 配置参数
+REDIS_PARAMS = {
+    "password": "password",
+    "db": 0
+}
 
 # ----------------------------------------Scrapy 其他参数-------------------------------------
 
