@@ -27,7 +27,7 @@ class BloomFilter(object):
         self.key = key
 
         self.m = math.ceil(capacity * math.log2(math.e) * math.log2(1 / error_rate))
-        self.k = math.ceil(math.log1p(2) * self.m / capacity)
+        self.k = math.ceil(math.log(2) * self.m / capacity)
         if self.k > 100:
             raise ValueError('K is too big.')
         self.mem = math.ceil(self.m / 8 / 1024 / 1024)  # 需要的内存，MB
