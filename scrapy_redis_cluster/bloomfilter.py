@@ -33,7 +33,7 @@ class BloomFilter(object):
         self.mem = math.ceil(self.m / 8 / 1024 / 1024)  # 需要的内存，MB
         self.blocknum = math.ceil(self.mem / 512)  # 需要多少个512M的内存块,value的第一个字符必须是ascii码，所有最多有256个内存块
         self.seeds = self.SEEDS[0:self.k]
-        self.N = 2 ** 31 - 1
+        self.N = self.m if self.m < (1 << 32) else (1 << 32)
         logger.info(f'BloomFilter: [Size] {self.mem}Mb  [Block Number] {self.blocknum}  [K] {self.k}')
 
     def exists(self, value):
@@ -65,9 +65,5 @@ class BloomFilter(object):
     def hash(self, value):
         hashs = []
         for seed in self.seeds:
-            h = mmh3.hash(value, seed)
-            if h >= 0:
-                hashs.append(h)
-            else:
-                hashs.append(self.N - h)
+            hashs.append(mmh3.hash(value, seed) % self.N)
         return hashs
